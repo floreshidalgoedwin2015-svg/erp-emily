@@ -15,13 +15,16 @@ export default async function EditarClientePage({
 
   const { data: cliente } = await supabase
     .from("clientes")
-    .select("id, nome, whatsapp, email, cpf, observacoes")
+    .select(
+      `id, nome, fantasia, codigo, tipo_pessoa, cpf, rg, inscricao_estadual,
+       data_nascimento, sexo, cep, uf, cidade, bairro, endereco, numero,
+       complemento, whatsapp, celular, fone, email, instagram, observacoes`
+    )
     .eq("id", clienteId)
     .single();
 
   if (!cliente) notFound();
 
-  // Busca histórico de vendas pelo nome do cliente (match exato ou parecido)
   const { data: historico } = await supabase
     .from("vendas")
     .select("id, numero_venda, total, forma_pagamento, criado_em")
@@ -31,7 +34,7 @@ export default async function EditarClientePage({
     .limit(50);
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-8 max-w-3xl">
       <div className="mb-8">
         <a
           href="/clientes"
@@ -39,16 +42,15 @@ export default async function EditarClientePage({
         >
           ← Voltar para Clientes
         </a>
-        <h1 className="text-2xl font-bold text-zinc-800">
-          ✏️ Editar cliente
-        </h1>
+        <h1 className="text-2xl font-bold text-zinc-800">✏️ Editar cliente</h1>
         <p className="text-zinc-500 text-sm mt-1">
           Atualize os dados e veja o histórico de compras.
         </p>
       </div>
 
       <EditarClienteForm
-        cliente={cliente}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        cliente={cliente as any}
         historico={historico ?? []}
       />
     </div>
