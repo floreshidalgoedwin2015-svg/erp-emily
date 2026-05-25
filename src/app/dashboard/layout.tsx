@@ -8,6 +8,7 @@ const menuItens = [
   { href: "/produtos", icon: "👗", label: "Produtos" },
   { href: "/listas-precos", icon: "💲", label: "Listas de preço" },
   { href: "/estoque", icon: "📦", label: "Estoque" },
+  { href: "/clientes", icon: "👤", label: "Clientes" },
   { href: "/pdv", icon: "🛒", label: "PDV — Vendas" },
   { href: "/relatorios", icon: "📊", label: "Relatórios" },
   { href: "/atendentes", icon: "👥", label: "Atendentes" },
