@@ -26,6 +26,7 @@ export async function criarProduto(
   const categoriaId = formData.get("categoria_id") as string;
   const fornecedorId = (formData.get("fornecedor_id") as string) || null;
   const descricao = (formData.get("descricao") as string)?.trim() || null;
+  const fotoUrl = (formData.get("foto_url") as string) || null;
 
   if (!nome) return { erro: "O nome do produto é obrigatório." };
   if (!categoriaId) return { erro: "Selecione uma categoria." };
@@ -67,6 +68,7 @@ export async function criarProduto(
       categoria_id: parseInt(categoriaId),
       fornecedor_id: fornecedorId ? parseInt(fornecedorId) : null,
       descricao,
+      foto_url: fotoUrl,
     })
     .select()
     .single();

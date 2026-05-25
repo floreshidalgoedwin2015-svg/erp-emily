@@ -18,7 +18,7 @@ export default async function EditarProdutoPage({
       supabase
         .from("produtos")
         .select(
-          `id, nome, codigo, categoria_id, fornecedor_id,
+          `id, nome, codigo, foto_url, categoria_id, fornecedor_id,
            categorias ( id, nome ),
            fornecedores ( id, nome ),
            variacoes ( id, tamanho, cor, preco_venda, preco_custo, estoque_atual, estoque_minimo )`

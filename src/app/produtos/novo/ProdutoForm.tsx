@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useRef } from "react";
 import { criarProduto } from "./actions";
+import { createClient as createBrowserClient } from "@/utils/supabase/client";
 
 type Categoria = { id: number; nome: string };
 type Fornecedor = { id: number; nome: string };
@@ -43,6 +44,24 @@ export function ProdutoForm({
 }) {
   const [state, action, pending] = useActionState(criarProduto, undefined);
   const [variacoes, setVariacoes] = useState<Variacao[]>([novaVariacao()]);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const [fotoUrl, setFotoUrl] = useState<string>("");
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+  const fotoInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFotoChange(file: File) {
+    setFotoPreview(URL.createObjectURL(file));
+    setUploadingFoto(true);
+    const supabase = createBrowserClient();
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("produtos").upload(path, file, { upsert: true });
+    if (!error) {
+      const { data } = supabase.storage.from("produtos").getPublicUrl(path);
+      setFotoUrl(data.publicUrl);
+    }
+    setUploadingFoto(false);
+  }
 
   function adicionarVariacao() {
     setVariacoes((prev) => [...prev, novaVariacao()]);
@@ -75,12 +94,9 @@ export function ProdutoForm({
 
   return (
     <form action={action} className="space-y-8">
-      {/* Campo oculto com as variações */}
-      <input
-        type="hidden"
-        name="variacoes"
-        value={JSON.stringify(variacoesParaEnviar)}
-      />
+      {/* Campos ocultos */}
+      <input type="hidden" name="variacoes" value={JSON.stringify(variacoesParaEnviar)} />
+      <input type="hidden" name="foto_url" value={fotoUrl} />
 
       {/* ── Dados do produto ── */}
       <section className="bg-white rounded-2xl border border-amber-100 p-6 shadow-sm">
@@ -88,6 +104,50 @@ export function ProdutoForm({
           📝 Dados do produto
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* Foto do produto */}
+          <div className="sm:col-span-2">
+            <label className={labelClass}>Foto do produto</label>
+            <div className="flex items-center gap-4">
+              <div
+                className="w-24 h-24 rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50 flex items-center justify-center overflow-hidden cursor-pointer hover:border-amber-400 transition shrink-0"
+                onClick={() => fotoInputRef.current?.click()}
+              >
+                {fotoPreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={fotoPreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-3xl">👗</span>
+                )}
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => fotoInputRef.current?.click()}
+                  disabled={uploadingFoto}
+                  className="block px-4 py-2 rounded-lg border border-zinc-200 text-sm text-zinc-600 hover:bg-zinc-50 transition mb-2 disabled:opacity-60"
+                >
+                  {uploadingFoto ? "📤 Fazendo upload..." : fotoPreview ? "📷 Trocar foto" : "📷 Adicionar foto"}
+                </button>
+                {fotoPreview && !uploadingFoto && (
+                  <button
+                    type="button"
+                    onClick={() => { setFotoPreview(null); setFotoUrl(""); }}
+                    className="text-xs text-red-400 hover:text-red-600 transition"
+                  >
+                    Remover foto
+                  </button>
+                )}
+                <input
+                  ref={fotoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFotoChange(f); }}
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="sm:col-span-2">
             <label htmlFor="nome" className={labelClass}>
               Nome do produto <span className="text-red-500">*</span>

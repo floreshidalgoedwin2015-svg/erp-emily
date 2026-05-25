@@ -24,6 +24,7 @@ export async function atualizarProduto(
     nome: string;
     categoria_id: number | null;
     fornecedor_id: number | null;
+    foto_url?: string | null;
   },
   variacoes: VariacaoEditar[],
 ): Promise<ResultadoEdicao> {
@@ -35,14 +36,17 @@ export async function atualizarProduto(
   if (!user) return { sucesso: false, erro: "Não autorizado." };
 
   // 1. Atualiza o produto
+  const updateData: Record<string, unknown> = {
+    nome: dados.nome.trim(),
+    categoria_id: dados.categoria_id,
+    fornecedor_id: dados.fornecedor_id || null,
+    atualizado_em: new Date().toISOString(),
+  };
+  if (dados.foto_url !== undefined) updateData.foto_url = dados.foto_url;
+
   const { error: erroProduto } = await supabase
     .from("produtos")
-    .update({
-      nome: dados.nome.trim(),
-      categoria_id: dados.categoria_id,
-      fornecedor_id: dados.fornecedor_id || null,
-      atualizado_em: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq("id", produtoId);
 
   if (erroProduto) return { sucesso: false, erro: erroProduto.message };
