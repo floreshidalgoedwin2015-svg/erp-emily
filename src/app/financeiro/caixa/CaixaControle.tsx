@@ -10,7 +10,7 @@ const LOJAS = [
   "Outro",
 ];
 
-export function AbrirCaixaModal({ onFechar }: { onFechar: () => void }) {
+function AbrirCaixaForm({ onFechar }: { onFechar: () => void }) {
   const [isPending, startTransition] = useTransition();
   const [loja, setLoja] = useState(LOJAS[0]);
   const [lojaCustom, setLojaCustom] = useState("");
@@ -69,5 +69,21 @@ export function AbrirCaixaModal({ onFechar }: { onFechar: () => void }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export function AbrirCaixaModal() {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setAberto(true)}
+        className="px-4 py-2.5 rounded-xl bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 transition shadow-sm"
+      >
+        + Abrir Caixa
+      </button>
+      {aberto && <AbrirCaixaForm onFechar={() => setAberto(false)} />}
+    </>
   );
 }
