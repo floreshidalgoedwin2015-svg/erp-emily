@@ -3,22 +3,36 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { logout } from "@/app/login/actions";
 
-const menuItens = [
+type MenuItem =
+  | { type?: undefined; href: string; icon: string; label: string }
+  | { type: "section"; label: string };
+
+const menuItens: MenuItem[] = [
   { href: "/dashboard", icon: "🏠", label: "Início" },
+  { href: "/pdv", icon: "🛒", label: "PDV — Vendas" },
+
+  { type: "section", label: "Cadastros" },
   { href: "/produtos", icon: "👗", label: "Produtos" },
   { href: "/listas-precos", icon: "💲", label: "Listas de preço" },
-  { href: "/estoque", icon: "📦", label: "Estoque" },
   { href: "/clientes", icon: "👤", label: "Clientes" },
   { href: "/fornecedores", icon: "🏭", label: "Fornecedores" },
-  { href: "/compras", icon: "🛍️", label: "Pedidos de compra" },
+
+  { type: "section", label: "Estoque" },
+  { href: "/estoque", icon: "📦", label: "Estoque" },
   { href: "/estoque/conferencia", icon: "📋", label: "Conferência" },
-  { href: "/pdv", icon: "🛒", label: "PDV — Vendas" },
+  { href: "/compras", icon: "🛍️", label: "Pedidos de compra" },
+
+  { type: "section", label: "Vendas" },
   { href: "/pedidos-venda", icon: "📝", label: "Pedidos de venda" },
   { href: "/envios", icon: "📮", label: "Envios" },
   { href: "/cobrancas", icon: "💰", label: "Cobranças" },
   { href: "/propostas", icon: "📋", label: "Propostas" },
+
+  { type: "section", label: "Financeiro" },
   { href: "/financeiro/contas-pagar", icon: "💸", label: "Contas a pagar" },
   { href: "/financeiro/caixa", icon: "🏦", label: "Controle de caixa" },
+
+  { type: "section", label: "Sistema" },
   { href: "/relatorios", icon: "📊", label: "Relatórios" },
   { href: "/atendentes", icon: "👥", label: "Atendentes" },
   { href: "/importar", icon: "📥", label: "Importar Bling" },
@@ -52,17 +66,28 @@ export default async function DashboardLayout({
         </div>
 
         {/* Menu */}
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-          {menuItens.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-amber-400 transition-colors"
-            >
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
+        <nav className="flex-1 p-3 overflow-y-auto">
+          {menuItens.map((item, i) => {
+            if (item.type === "section") {
+              return (
+                <div key={i} className="px-3 pt-4 pb-1">
+                  <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
+                    {item.label}
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-amber-400 transition-colors"
+              >
+                <span className="text-base">{item.icon}</span>
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Rodapé */}
