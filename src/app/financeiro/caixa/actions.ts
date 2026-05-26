@@ -85,6 +85,24 @@ export async function conferirCaixa(sessaoId: number): Promise<ResultadoCaixa> {
   return { sucesso: true };
 }
 
+export async function salvarConferencia(
+  sessaoId: number,
+  valores: Record<string, number>,
+): Promise<ResultadoCaixa> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { sucesso: false, erro: "Não autorizado." };
+
+  const { error } = await supabase
+    .from("sessoes_caixa")
+    .update({ conferencia_valores: valores })
+    .eq("id", sessaoId);
+
+  if (error) return { sucesso: false, erro: error.message };
+  revalidatePath(`/financeiro/caixa/${sessaoId}`);
+  return { sucesso: true };
+}
+
 export async function adicionarMovimento(
   sessaoId: number,
   tipo: "entrada" | "saida",
