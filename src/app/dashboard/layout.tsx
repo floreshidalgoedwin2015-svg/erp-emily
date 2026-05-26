@@ -14,6 +14,7 @@ const menuItens = [
   { href: "/estoque/conferencia", icon: "📋", label: "Conferência" },
   { href: "/pdv", icon: "🛒", label: "PDV — Vendas" },
   { href: "/pedidos-venda", icon: "📝", label: "Pedidos de venda" },
+  { href: "/envios", icon: "📮", label: "Envios" },
   { href: "/cobrancas", icon: "💰", label: "Cobranças" },
   { href: "/propostas", icon: "📋", label: "Propostas" },
   { href: "/financeiro/contas-pagar", icon: "💸", label: "Contas a pagar" },
