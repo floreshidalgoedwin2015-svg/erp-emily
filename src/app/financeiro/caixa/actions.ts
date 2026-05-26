@@ -2,48 +2,86 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export type ResultadoCaixa = { sucesso: boolean; erro?: string; id?: number };
 
-export async function abrirCaixa(saldoAbertura: number, observacoes?: string): Promise<ResultadoCaixa> {
+export async function abrirCaixa(
+  loja: string,
+  saldoAbertura: number,
+  observacoes?: string,
+): Promise<ResultadoCaixa> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { sucesso: false, erro: "Não autorizado." };
+  if (!loja.trim()) return { sucesso: false, erro: "Selecione a loja." };
 
-  // Verificar se já tem sessão aberta hoje
-  const hoje = new Date().toISOString().split("T")[0];
-  const { data: existente } = await supabase
-    .from("sessoes_caixa")
-    .select("id")
-    .eq("status", "aberto")
-    .eq("data", hoje)
+  const { data: perfil } = await supabase
+    .from("atendentes")
+    .select("nome")
+    .eq("user_id", user.id)
     .maybeSingle();
 
-  if (existente) return { sucesso: false, erro: "Já existe um caixa aberto hoje." };
+  const operador = perfil?.nome ?? user.email ?? "Desconhecido";
 
   const { data, error } = await supabase
     .from("sessoes_caixa")
-    .insert({ data: hoje, saldo_abertura: saldoAbertura, observacoes: observacoes || null, status: "aberto", usuario_id: user.id })
+    .insert({
+      loja: loja.trim(),
+      operador,
+      data: new Date().toISOString().split("T")[0],
+      saldo_abertura: saldoAbertura,
+      observacoes: observacoes?.trim() || null,
+      status: "aberto",
+      usuario_id: user.id,
+    })
     .select("id")
     .single();
 
   if (error || !data) return { sucesso: false, erro: error?.message ?? "Erro ao abrir caixa." };
   revalidatePath("/financeiro/caixa");
-  return { sucesso: true, id: data.id };
+  redirect(`/financeiro/caixa/${data.id}`);
 }
 
-export async function fecharCaixa(sessaoId: number, saldoFechamento: number, observacoes?: string): Promise<ResultadoCaixa> {
+export async function fecharCaixa(
+  sessaoId: number,
+  saldoFechamento: number,
+  observacoes?: string,
+): Promise<ResultadoCaixa> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { sucesso: false, erro: "Não autorizado." };
 
   const { error } = await supabase
     .from("sessoes_caixa")
-    .update({ status: "fechado", saldo_fechamento: saldoFechamento, observacoes: observacoes || null, fechado_em: new Date().toISOString() })
+    .update({
+      status: "fechado",
+      saldo_fechamento: saldoFechamento,
+      observacoes: observacoes?.trim() || null,
+      fechado_em: new Date().toISOString(),
+    })
     .eq("id", sessaoId);
 
   if (error) return { sucesso: false, erro: error.message };
   revalidatePath("/financeiro/caixa");
+  revalidatePath(`/financeiro/caixa/${sessaoId}`);
+  return { sucesso: true };
+}
+
+export async function conferirCaixa(sessaoId: number): Promise<ResultadoCaixa> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { sucesso: false, erro: "Não autorizado." };
+
+  const { error } = await supabase
+    .from("sessoes_caixa")
+    .update({ status: "conferido" })
+    .eq("id", sessaoId)
+    .eq("status", "fechado");
+
+  if (error) return { sucesso: false, erro: error.message };
+  revalidatePath("/financeiro/caixa");
+  revalidatePath(`/financeiro/caixa/${sessaoId}`);
   return { sucesso: true };
 }
 
@@ -70,6 +108,6 @@ export async function adicionarMovimento(
   });
 
   if (error) return { sucesso: false, erro: error.message };
-  revalidatePath("/financeiro/caixa");
+  revalidatePath(`/financeiro/caixa/${sessaoId}`);
   return { sucesso: true };
 }
