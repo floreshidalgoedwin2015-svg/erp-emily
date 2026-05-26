@@ -16,6 +16,8 @@ const menuItens = [
   { href: "/pedidos-venda", icon: "📝", label: "Pedidos de venda" },
   { href: "/cobrancas", icon: "💰", label: "Cobranças" },
   { href: "/propostas", icon: "📋", label: "Propostas" },
+  { href: "/financeiro/contas-pagar", icon: "💸", label: "Contas a pagar" },
+  { href: "/financeiro/caixa", icon: "🏦", label: "Controle de caixa" },
   { href: "/relatorios", icon: "📊", label: "Relatórios" },
   { href: "/atendentes", icon: "👥", label: "Atendentes" },
   { href: "/importar", icon: "📥", label: "Importar Bling" },
