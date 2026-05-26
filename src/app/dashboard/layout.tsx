@@ -20,6 +20,7 @@ const menuItens: MenuItem[] = [
   { type: "section", label: "Estoque" },
   { href: "/estoque", icon: "📦", label: "Estoque" },
   { href: "/estoque/conferencia", icon: "📋", label: "Conferência" },
+  { href: "/estoque/depositos", icon: "🏪", label: "Depósitos" },
   { href: "/compras", icon: "🛍️", label: "Pedidos de compra" },
 
   { type: "section", label: "Vendas" },
